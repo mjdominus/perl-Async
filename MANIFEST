@@ -7,3 +7,4 @@ lib/Async/ShellCommand.pm
 t/async.t
 t/asyncShell.t
 t/asyncStorable.t
+t/synchronous.t
