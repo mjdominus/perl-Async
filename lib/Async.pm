@@ -5,7 +5,7 @@ use strict;
 use Carp 'croak';
 use Config;
 
-our $VERSION = '0.90';
+our $VERSION = '0.91';
 
 =head1 NAME
 
