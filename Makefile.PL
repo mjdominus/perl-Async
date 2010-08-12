@@ -3,6 +3,6 @@ use ExtUtils::MakeMaker;
 # the contents of the Makefile that is written.
 WriteMakefile(
     'NAME'	=> 'Async',
-    'VERSION_FROM' => 'Async.pm', 
+    'VERSION_FROM' => 'lib/Async.pm', 
 );
 

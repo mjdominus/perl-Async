@@ -1,3 +1,9 @@
 MANIFEST
-Async.pm
 Makefile.PL
+lib/Async.pm
+lib/Async/ShellCommand/Simple.pm
+lib/Async/Storable.pm
+lib/Async/ShellCommand.pm
+t/async.t
+t/asyncShell.t
+t/asyncStorable.t
