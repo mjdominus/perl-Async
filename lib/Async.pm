@@ -65,6 +65,11 @@ available yet, and can retrieve it if so.
 =head2 set_name
 =head2 set_code
 
+=head2 set_synchronous
+
+If you call C<< $self->set_synchronous(1) >> before starting the
+asynchronous process, then no aynchronous process will be started, and
+the code will execute synchronously.
 
 =cut
 
@@ -86,9 +91,16 @@ sub code { $_[0]{CODE} }
 sub set_name { $_[0]{NAME} = $_[1] }
 sub name { $_[0]{NAME} || "unnamed" }
 
+sub set_synchronous { $_[0]{SYNCHRONOUS} = $_[1] }
+sub is_synchronous { $_[0]{SYNCHRONOUS} }
+
 sub start {
   my $self = shift;
   return 1 if $self->is_started;
+
+  if ($self->is_synchronous()) {
+    return $self->synchronous_run();
+  }
 
   my ($rd, $wr);
   unless (pipe($rd, $wr)) {
@@ -117,6 +129,14 @@ sub start {
     $self->_set_started(1);
     return $pid;
   }
+}
+
+sub synchronous_run {
+  my $self = shift;
+  $self->{RESULT} = $self->_run_code();
+#  $self->set_exit_status($self->{RESULT}{SUCCESS} ? 0 : 1);
+  $self->_set_finished(1);
+  return $self->{RESULT};
 }
 
 sub error { $_[0]{ERROR} }
@@ -270,23 +290,23 @@ sub freeze {
 # DOES NOT RETURN
 sub _do_it {
   my $self = shift;
+  my $reply = $self->_run_code();
+
+  warn "replying\n" if $self->debug;
+  $self->reply($reply);
+  warn "exiting\n" if $self->debug;
+  exit 0;
+}
+
+sub _run_code {
+  my $self = shift;
   my $result = eval {
     # Do not let exceptions propagate back to the caller!
     warn "running code\n" if $self->debug;
     $self->code->(@_);
   };
   warn "code finished\n" if $self->debug;
-  my $reply;
-  if ($@) {
-    $reply = $self->failure($@);
-  } else {
-    $reply = $self->success($result);
-  }
-
-  warn "replying\n" if $self->debug;
-  $self->reply($reply);
-  warn "exiting\n" if $self->debug;
-  exit 0;
+  return $@ ? $self->failure($@) : $self->success($result);
 }
 
 sub reply {
